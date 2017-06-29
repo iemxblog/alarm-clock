@@ -6,7 +6,7 @@
 
 
 const int RECV_PIN = 4;
-const int LED_PIN = 5;
+const int LED_PIN = 6;
 
 IRrecv irrecv(RECV_PIN);
 U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
