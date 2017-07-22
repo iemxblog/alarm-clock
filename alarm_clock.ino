@@ -4,16 +4,22 @@
 #include <U8g2lib.h>
 #include <IRremote.h>
 
+#include "actions.h"
+#include "led.h"
+
 
 const int RECV_PIN = 4;
-const int LED_PIN = 6;
+const int LM35DZ_PIN = 0;
+
+
 
 IRrecv irrecv(RECV_PIN);
+IRsend irsend;
 U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
  
 
 
-enum Code {KEY_0, KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9, KEY_ENTER, KEY_STOP_MODE, KEY_SETUP, KEY_PLAY_PAUSE, KEY_NONE};
+enum Code {KEY_0, KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9, KEY_ENTER, KEY_STOP_MODE, KEY_SETUP, KEY_PLAY_PAUSE, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_NONE};
 enum State {SHOW_TIME, HIDE_TIME, SET_TIME};
 State state=SET_TIME;
 
@@ -26,7 +32,7 @@ void shift_buffer(int *buffer)
     buffer[i+1]=buffer[i];
 }
 
-void display()
+void display_setup()
 {
   u8g2.clearBuffer();
   u8g2.setFont(u8g2_font_ncenB14_tr);
@@ -68,7 +74,7 @@ void two_digits(int n)
     
 }
 
-void display2()
+void display_time()
 {
   u8g2.clearBuffer();
   //u8g2.setFont(u8g2_font_ncenB14_tr);
@@ -81,6 +87,11 @@ void display2()
   u8g2.print(":");
   two_digits(second());
 
+  u8g2.setFont(u8g2_font_7x14_tr);
+  u8g2.setCursor(100, 60);
+  float temp = (2.56 * analogRead(LM35DZ_PIN) * 100.0) / 1024;
+  u8g2.print(String(temp) + "°");
+
   u8g2.sendBuffer();
 }
 
@@ -90,25 +101,13 @@ void clear()
   u8g2.sendBuffer();
 }
 
-void toggleLED()
-{
-  static bool led_state = false;
-  if(led_state == false) {
-    digitalWrite(LED_PIN, HIGH);
-    led_state = true;
-  }
-  else {
-    digitalWrite(LED_PIN, LOW);
-    led_state = false;
-  }
-}
-
 void setup()
 {
   Serial.begin(9600);
   irrecv.enableIRIn(); // Start the receiver
   u8g2.begin();
-  pinMode(LED_PIN, OUTPUT);
+  init_led();
+  analogReference(INTERNAL);
 }
 
 
@@ -162,6 +161,18 @@ enum Code getKey() {
       case 0xFD807F:
         ret = KEY_PLAY_PAUSE;
         break;
+      case 0xFDA105F:
+        ret = KEY_UP;
+        break;
+      case 0xFDB04F:
+        ret = KEY_DOWN;
+        break;
+      case 0xFD10EF:
+        ret=KEY_LEFT;
+        break;
+      case 0xFD50AF:
+        ret = KEY_RIGHT;
+        break;
       default:
         Serial.println("debug");
         Serial.println(results.value, HEX);
@@ -175,7 +186,7 @@ enum Code getKey() {
 }
 
 void loop() {
-   
+  actions();
   Code key = getKey();
 
   if(key == KEY_PLAY_PAUSE)
@@ -183,11 +194,17 @@ void loop() {
   
   switch(state) {
     case SHOW_TIME:
-      display2();
+      display_time();
       if(key == KEY_STOP_MODE)
         state = HIDE_TIME;
       else if(key == KEY_SETUP)
         state = SET_TIME;
+      else if(key == KEY_DOWN) {
+        irsend.sendNEC(0x659A38C7, 32);
+        delay(200);
+        irrecv.enableIRIn();
+        //irrecv.resume();
+      }
       break;
     case HIDE_TIME:
       if(key == KEY_STOP_MODE)
@@ -204,7 +221,9 @@ void loop() {
         setTime(digits[5]*10+digits[4],digits[3]*10+digits[2],digits[1]*10 + digits[0],digits[7]*10+digits[6],digits[9]*10+digits[8],digits[13]*1000 + digits[12]*100+digits[11]*10+digits[10]);
         state = SHOW_TIME;
       }
-      display();
+      else if(key==KEY_SETUP)
+        state=SHOW_TIME;
+      display_setup();
       break;
     default:
       break;
