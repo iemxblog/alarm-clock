@@ -19,7 +19,7 @@ U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
  
 
 
-enum Code {KEY_0, KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9, KEY_ENTER, KEY_STOP_MODE, KEY_SETUP, KEY_PLAY_PAUSE, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_NONE};
+enum Code {KEY_0, KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9, KEY_ENTER, KEY_STOP_MODE, KEY_SETUP, KEY_PLAY_PAUSE, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_IPOD_CONTROL, KEY_NONE};
 enum State {SHOW_TIME, HIDE_TIME, SET_TIME};
 State state=SET_TIME;
 
@@ -173,6 +173,9 @@ enum Code getKey() {
       case 0xFD50AF:
         ret = KEY_RIGHT;
         break;
+      case 0x659A05FA:
+        ret = KEY_IPOD_CONTROL;  // available on the second remote
+        break;
       default:
         Serial.println("debug");
         Serial.println(results.value, HEX);
@@ -189,7 +192,7 @@ void loop() {
   actions();
   Code key = getKey();
 
-  if(key == KEY_PLAY_PAUSE)
+  if(key == KEY_PLAY_PAUSE || key == KEY_IPOD_CONTROL)
     toggleLED();
   
   switch(state) {
