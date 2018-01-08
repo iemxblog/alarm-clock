@@ -19,7 +19,7 @@ U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
  
 
 
-enum Code {KEY_0, KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9, KEY_ENTER, KEY_STOP_MODE, KEY_SETUP, KEY_PLAY_PAUSE, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_IPOD_CONTROL, KEY_NONE};
+enum Code {KEY_0, KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9, KEY_ENTER, KEY_STOP_MODE, KEY_SETUP, KEY_PLAY_PAUSE, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_IPOD_CONTROL, KEY_RETURN, KEY_NONE};
 enum State {SHOW_TIME, HIDE_TIME, SET_TIME};
 State state=SET_TIME;
 
@@ -176,6 +176,9 @@ enum Code getKey() {
       case 0x659A05FA:
         ret = KEY_IPOD_CONTROL;  // available on the second remote
         break;
+      case 0x659ACE31:
+        ret = KEY_RETURN;
+        break;
       default:
         Serial.println("debug");
         Serial.println(results.value, HEX);
@@ -192,13 +195,20 @@ void loop() {
   actions();
   Code key = getKey();
 
-  if(key == KEY_PLAY_PAUSE || key == KEY_IPOD_CONTROL)
+  if(key == KEY_PLAY_PAUSE || key == KEY_IPOD_CONTROL) {
     toggleLED();
+    Serial.println("Sending IR code...");
+    irsend.sendNEC(0x659A38C7, 32);
+    Serial.print("IR code sent on pin ");
+    Serial.println(SEND_PIN);
+    delay(200);
+    irrecv.enableIRIn(); // Start the receiver
+  }
   
   switch(state) {
     case SHOW_TIME:
       display_time();
-      if(key == KEY_STOP_MODE)
+      if(key == KEY_STOP_MODE || key == KEY_RETURN)
         state = HIDE_TIME;
       else if(key == KEY_SETUP)
         state = SET_TIME;
@@ -210,7 +220,7 @@ void loop() {
       }
       break;
     case HIDE_TIME:
-      if(key == KEY_STOP_MODE)
+      if(key == KEY_STOP_MODE || key == KEY_RETURN)
         state = SHOW_TIME;
       clear();
       break;
