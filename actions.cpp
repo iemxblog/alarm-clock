@@ -1,7 +1,6 @@
 #include <Time.h>
 #include <IRremote.h>
 #include "led.h"
-//IRsend irsend;
 
 void actions()
 {
