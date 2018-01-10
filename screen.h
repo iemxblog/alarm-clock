@@ -5,5 +5,6 @@ void init_screen();
 void black_screen();
 void display_time();
 void display_setup(int digits[]);
+void screen_print(char *);
 
 #endif

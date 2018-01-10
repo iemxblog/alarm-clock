@@ -76,3 +76,15 @@ void display_setup(int digits[])
   
   u8g2.sendBuffer();
 }
+
+void screen_print(char *msg)
+{
+  u8g2.clearBuffer();
+  u8g2.setFont(u8g2_font_ncenB14_tr);
+  u8g2.setCursor(0, 20);
+
+  u8g2.print(msg);
+  u8g2.println();
+  
+  u8g2.sendBuffer();
+}

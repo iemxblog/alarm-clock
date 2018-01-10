@@ -35,21 +35,12 @@ void loop() {
   if(key == KEY_PLAY_PAUSE)
     toggleLED();
 
-  if(key == KEY_IPOD_CONTROL) {
-    delay(1000);
-    IR_hifi_power();
-    delay(40000);
-    IR_tuner();
-    IR_2();
-  }
+  if(key == KEY_IPOD_CONTROL)
+    france_culture();
 
-  if(key == KEY_DOWN) {
-    while(1) {
-      IR_volume_up();
-      delay(1000);
-    }
-  }
-  
+  if(key == KEY_DOWN)
+    podcast();
+
   switch(state) {
     case SHOW_TIME:
       display_time();

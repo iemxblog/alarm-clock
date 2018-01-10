@@ -1,26 +1,22 @@
-#include "IR.h"
+#include <Arduino.h>
+#include "IRCommands.h"
+#include "screen.h"
 
-void IR_hifi_power()
-{
-  sendNecCode(0x659A38C7);
+void france_culture() {
+  screen_print("France Culture");
+  delay(1000);
+  IR_hifi_power();
+  delay(40000);
+  IR_tuner();
+  IR_2();
 }
 
-void IR_tuner()
-{
-  sendNecCode(0x659AB04F);
+void podcast() {
+  screen_print("Podcast");
+  IR_audio_in();
+  for(int i=13;i<35;i++) {
+    IR_volume_up();
+    delay(1000);
+  }
 }
 
-void IR_volume_up()
-{
-  sendNecCode(0x659A50AF);
-}
-
-void IR_volume_down()
-{
-  sendNecCode(0x659AD02F);
-}
-
-void IR_2()
-{
-  sendNecCode(0x659A807F);
-}
