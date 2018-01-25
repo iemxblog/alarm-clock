@@ -35,7 +35,7 @@ void loop() {
   if(key == KEY_PLAY_PAUSE)
     toggleLED();
 
-  if(key == KEY_IPOD_CONTROL)
+  if(key == KEY_UP)
     france_culture();
 
   if(key == KEY_DOWN)
